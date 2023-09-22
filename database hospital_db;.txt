@@ -1,0 +1,69 @@
+create database hospital_db;
+
+use hospital_db;
+
+alter table hospital_employee
+change column ï»¿emp_id emp_id int;
+
+alter table hospital_department
+change column ï»¿dep_no dep_no int;
+
+alter table hospital_patient_medical_condition
+change column ï»¿patient_id patient_id int;
+
+alter table admitted
+modify column admit_date date, 
+modify column discharge_date date;
+
+-- 1. find the number of male and female in each employee type category?
+select emp_type,sex,count(*) as emp_count
+from hospital_employee
+group by 1,2;
+
+-- 2. what is the avg fees of each department
+
+SELECT hd.dep_name,AVG(fees) AS avg_fees
+FROM hospital_department hd
+JOIN hospital_treatments_available ht ON hd.dep_no = ht.dep_no
+GROUP BY hd.dep_no, hd.dep_name
+order by avg_fees desc;
+
+-- 3. what is the no. of patients in different medical condition
+ 
+ select medical_history as medical_condition,count(*) as patient_count
+ from hospital_patient_medical_condition
+ group by medical_history
+ order by count(*) desc;
+ 
+ -- 4. no. of patients by gender
+ 
+ select sex,count(*) as patient_count
+ from hospital_patient_general_details
+ group by sex;
+
+-- 5. avg period of admitted patients
+
+select round(avg(datediff(admit_date,discharge_date)),0) as avg_admitted_period
+from admitted;
+
+-- 6. no. of treatment in each department
+
+select hd.dep_name,count(*) as treatment_count
+from hospital_treatments_available ht,hospital_department hd
+where ht.dep_no=hd.dep_no
+group by hd.dep_name
+order by count(*) desc;
+
+-- 7. average employment length
+
+
+SELECT round(avg(datediff(date_of_resign,date_of_join)/365),0) as avg_employment_length
+FROM hospital_employee
+where date_of_resign is not null;
+
+-- 8. treatment fees greater than avg treatment fees
+
+select treatment_name,fees
+from hospital_treatments_available
+where fees > (select avg(fees) from hospital_treatments_available)
+order by fees desc;
